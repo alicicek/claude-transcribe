@@ -1,17 +1,17 @@
 {
   "name": "alicicek-marketplace",
   "owner": {
-    "name": "Ali Cicek"
+    "name": "Ali Cicek",
+    "url": "https://github.com/alicicek"
   },
   "plugins": [
     {
       "name": "claude-transcribe",
-      "source": {
-        "source": "url",
-        "url": "https://github.com/alicicek/claude-transcribe.git"
-      },
+      "source": "./plugins/claude-transcribe",
       "description": "Transcribe video/audio from URLs or local files via yt-dlp + Whisper.",
-      "version": "0.1.0"
+      "version": "0.1.0",
+      "category": "productivity",
+      "tags": ["transcription", "whisper", "yt-dlp", "youtube", "podcast"]
     }
   ]
 }
