@@ -7,8 +7,8 @@
     {
       "name": "claude-transcribe",
       "source": {
-        "source": "github",
-        "repo": "alicicek/claude-transcribe"
+        "source": "url",
+        "url": "https://github.com/alicicek/claude-transcribe.git"
       },
       "description": "Transcribe video/audio from URLs or local files via yt-dlp + Whisper.",
       "version": "0.1.0"
