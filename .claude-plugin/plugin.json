@@ -1,0 +1,34 @@
+{
+  "name": "claude-transcribe",
+  "version": "0.1.0",
+  "description": "Transcribe video and audio from URLs (YouTube, X, TikTok, Vimeo, podcasts) or local media files using yt-dlp + OpenAI Whisper. Auto-triggers when you ask Claude to research, transcribe, or summarise the contents of a video.",
+  "author": {
+    "name": "Ali Cicek",
+    "url": "https://github.com/alicicek"
+  },
+  "homepage": "https://github.com/alicicek/claude-transcribe",
+  "repository": "https://github.com/alicicek/claude-transcribe",
+  "license": "MIT",
+  "keywords": [
+    "transcription",
+    "whisper",
+    "yt-dlp",
+    "youtube",
+    "audio",
+    "video",
+    "podcast",
+    "skill"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/install-deps.sh\" || true"
+          }
+        ]
+      }
+    ]
+  }
+}

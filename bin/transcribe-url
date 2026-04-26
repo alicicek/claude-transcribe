@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# transcribe-url: download audio from a URL (or use a local file) and transcribe
+# with OpenAI Whisper.
+#
+# Usage:   transcribe-url <url-or-local-file> [whisper-model]
+# Models:  tiny.en | base.en | small.en (default) | medium | large-v3
+#
+# Output:  prints the absolute path of the .txt transcript on stdout.
+#          Transcripts go to $CLAUDE_TRANSCRIBE_OUTDIR if set, otherwise
+#          ${TMPDIR:-/tmp}/claude-transcribe.
+
+set -euo pipefail
+
+INPUT="${1:?Usage: transcribe-url <url-or-local-file> [whisper-model]}"
+MODEL="${2:-small.en}"
+OUTDIR="${CLAUDE_TRANSCRIBE_OUTDIR:-${TMPDIR:-/tmp}/claude-transcribe}"
+WHISPER_VENV="${HOME}/.local/share/claude-transcribe/whisper-venv"
+WHISPER="${WHISPER_VENV}/bin/whisper"
+
+# Resolve yt-dlp from PATH or common Homebrew locations
+if command -v yt-dlp >/dev/null 2>&1; then
+  YT_DLP="$(command -v yt-dlp)"
+elif [[ -x /opt/homebrew/bin/yt-dlp ]]; then
+  YT_DLP=/opt/homebrew/bin/yt-dlp
+elif [[ -x /usr/local/bin/yt-dlp ]]; then
+  YT_DLP=/usr/local/bin/yt-dlp
+else
+  echo "Error: yt-dlp not found. Install with: brew install yt-dlp" >&2
+  exit 127
+fi
+
+if [[ ! -x "$WHISPER" ]]; then
+  echo "Error: whisper venv missing at $WHISPER_VENV" >&2
+  echo "Install with:" >&2
+  echo "  brew install python@3.13 ffmpeg" >&2
+  echo "  python3.13 -m venv \"$WHISPER_VENV\"" >&2
+  echo "  \"$WHISPER_VENV/bin/pip\" install -U openai-whisper" >&2
+  exit 127
+fi
+
+mkdir -p "$OUTDIR"
+
+if [[ "$INPUT" =~ ^https?:// ]]; then
+  TMPWORK="$(mktemp -d)"
+  trap 'rm -rf "$TMPWORK"' EXIT
+
+  # Auto-detect installed browser for --cookies-from-browser. Order: most
+  # commonly logged in to YouTube/X first.
+  BROWSER_FLAG=()
+  for BROWSER_TRY in chrome brave arc edge firefox safari; do
+    case "$BROWSER_TRY" in
+      chrome)   APP="/Applications/Google Chrome.app" ;;
+      brave)    APP="/Applications/Brave Browser.app" ;;
+      arc)      APP="/Applications/Arc.app" ;;
+      edge)     APP="/Applications/Microsoft Edge.app" ;;
+      firefox)  APP="/Applications/Firefox.app" ;;
+      safari)   APP="/Applications/Safari.app" ;;
+    esac
+    if [[ -d "$APP" ]]; then
+      BROWSER_FLAG=(--cookies-from-browser "$BROWSER_TRY")
+      echo "[transcribe-url] using cookies from $BROWSER_TRY" >&2
+      break
+    fi
+  done
+
+  echo "[transcribe-url] downloading audio from $INPUT" >&2
+  YT_BASE_ARGS=(-x --audio-format mp3 --audio-quality 0
+                --no-playlist --restrict-filenames
+                -o "${TMPWORK}/%(title).100s.%(ext)s")
+
+  if ! "$YT_DLP" "${BROWSER_FLAG[@]}" "${YT_BASE_ARGS[@]}" "$INPUT" >&2; then
+    if [[ ${#BROWSER_FLAG[@]} -gt 0 ]]; then
+      echo "[transcribe-url] cookie-assisted download failed, retrying without cookies" >&2
+      "$YT_DLP" "${YT_BASE_ARGS[@]}" "$INPUT" >&2
+    else
+      exit 4
+    fi
+  fi
+  AUDIO="$(ls "$TMPWORK"/*.mp3 2>/dev/null | head -1 || true)"
+elif [[ -f "$INPUT" ]]; then
+  AUDIO="$INPUT"
+else
+  echo "Error: '$INPUT' is neither an http(s) URL nor an existing file" >&2
+  exit 1
+fi
+
+if [[ -z "${AUDIO:-}" || ! -f "$AUDIO" ]]; then
+  echo "Error: failed to obtain audio from input" >&2
+  exit 2
+fi
+
+echo "[transcribe-url] transcribing '$AUDIO' with model=$MODEL" >&2
+"$WHISPER" "$AUDIO" \
+  --model "$MODEL" \
+  --output_format txt \
+  --output_dir "$OUTDIR" \
+  --verbose False >&2
+
+BASENAME="$(basename "$AUDIO")"
+TXT="${OUTDIR}/${BASENAME%.*}.txt"
+if [[ ! -f "$TXT" ]]; then
+  TXT="$(ls -t "$OUTDIR"/*.txt 2>/dev/null | head -1 || true)"
+fi
+
+if [[ -z "$TXT" || ! -f "$TXT" ]]; then
+  echo "Error: whisper produced no transcript" >&2
+  exit 3
+fi
+
+echo "$TXT"
