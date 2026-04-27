@@ -1,0 +1,42 @@
+{
+  "name": "claude-transcribe",
+  "version": "0.1.0",
+  "description": "Claude Code plugin: transcribe video/audio from URLs (YouTube, X, TikTok, Vimeo, podcasts) or local media files using yt-dlp + OpenAI Whisper, fully on-device.",
+  "keywords": [
+    "claude-code",
+    "claude-code-plugin",
+    "transcription",
+    "whisper",
+    "yt-dlp",
+    "youtube",
+    "podcast",
+    "audio",
+    "video"
+  ],
+  "homepage": "https://github.com/alicicek/claude-transcribe#readme",
+  "bugs": {
+    "url": "https://github.com/alicicek/claude-transcribe/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alicicek/claude-transcribe.git",
+    "directory": "plugins/claude-transcribe"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Ali Cicek",
+    "url": "https://github.com/alicicek"
+  },
+  "files": [
+    ".claude-plugin",
+    "skills",
+    "bin",
+    "hooks",
+    "README.md",
+    "LICENSE"
+  ],
+  "os": ["darwin", "linux"],
+  "engines": {
+    "node": ">=18"
+  }
+}
