@@ -16,8 +16,10 @@ In Claude Code:
 
 ```
 /plugin marketplace add alicicek/claude-transcribe
-/plugin install claude-transcribe
+/plugin install claude-transcribe@alicicek-marketplace
 ```
+
+The plugin itself ships through npm (`claude-transcribe` on [npmjs.com](https://www.npmjs.com/package/claude-transcribe)) — that's a deliberate choice so the install uses HTTPS and works without GitHub SSH keys, while the marketplace catalog stays on GitHub for visibility.
 
 The first time the plugin loads, a `SessionStart` hook installs `yt-dlp`, `ffmpeg`, `python@3.13`, and `openai-whisper` (in an isolated venv at `~/.local/share/claude-transcribe/whisper-venv`). Subsequent sessions skip the install.
 
