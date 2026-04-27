@@ -93,6 +93,8 @@ To use the script directly from your shell, add the plugin's `bin/` to your `PAT
 - **Browser cookies** are passed to `yt-dlp` so authenticated downloads work. They never leave your machine. The plugin only reads cookies for the domain you're downloading from, the same way `yt-dlp --cookies-from-browser` does normally.
 - **Transcripts auto-expire.** They live in `$TMPDIR`, which macOS cleans automatically. Set `CLAUDE_TRANSCRIBE_OUTDIR` to keep them.
 
+The full privacy policy — including every third-party service the plugin touches and where each piece of data lives on your machine — is at [PRIVACY.md](PRIVACY.md).
+
 ## Troubleshooting
 
 | Symptom | Fix |
